@@ -6,10 +6,12 @@
 #include <iostream>
 
 
+//Function prototypes
 void performanceOptimizedLoop(std::vector<Point*>* points);
 void graphicalLoop(std::vector<Point*>* points);
 void processArguments(int argc, char** argv, std::vector<Point*>* points);
 
+//Functionpointer, that will execute the 'MODE', that is either graphical or performance optimized - the default is graphical
 void(*loop)(std::vector<Point*>* points) = graphicalLoop;
 
 int main(int argc, char** argv) {
