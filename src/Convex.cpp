@@ -1,6 +1,7 @@
 #include "DataInput.h"
 #include "Point.h"
 #include "ConvexGUI.h"
+#include "DivideAndConquer.h"
 
 #include <vector>
 #include <iostream>
@@ -38,7 +39,7 @@ void processArguments(int argc, char** argv, std::vector<Point*>* points) {
 		std::string s(argv[i]);
 		if (s == "--DataRandom") {//Command line argument for generating Random Vertices
 			if (!(argc - i >= 3)) {
-				std::cout << "[Convex]::processArguments -> --DataRandom argument needs additional 3 arguments for amount, upper bound & lower bound" << std::endl;
+				std::cout << "[Convex]::processArguments -> --DataRandom argument needs additional 3 arguments for amount, upper bound & lower bound!" << std::endl;
 				continue;
 			}
 			int amount = atoi(argv[++i]);
@@ -46,7 +47,10 @@ void processArguments(int argc, char** argv, std::vector<Point*>* points) {
 			int lower_bound = atoi(argv[++i]);
 			getPointsFromRandom(points, amount, upper_bound, lower_bound);
 		}
-		else if (s == "--DataFile" && argc - i >= 1) { //Command line argument for reading vertices out of file
+		else if (s == "--DataFile") { //Command line argument for reading vertices out of file
+			if (!(argc - i >= 1)) {
+				std::cout << "[Convex]::processArguments -> --DataFile argument needs additional 1 arguments for the file location!" << std::endl;
+			}
 			getPointsFromFile(argv[++i], points);
 		}
 		else if (s == "--performance") { //Command line argument to trigger performance loop mode - default is graphic
@@ -67,6 +71,7 @@ An application loop, that will provide a GUI for the user and also displays the 
 void graphicalLoop(std::vector<Point*>* points) {
 	I_View* view = new ConvexGUI(points);
 	while (!view->shouldClose()) {
+		DaC(points);
 		view->update();
 	}
 	delete view;
