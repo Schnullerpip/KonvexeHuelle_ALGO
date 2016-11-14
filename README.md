@@ -19,7 +19,7 @@ Bis jetzt habe ich die Ordner:
 * *src*
 
 Der *src* Ordner enthält seinerseits:
-* *model* enthält bisher nur die *Point* Klasse aber, beinhaltet alle models des Projekts
+* *model* enthält z.B. die *Point* & *ConvexHull* Klassen aber, beinhaltet alle models des Projekts
 * *utils* Sammlung hilfreicher Funktionen, bisher nur *DataInput.h*, welche sich um die generierung/das Auslesen von vertices kümmert
 * *view* enthält alle GUI spezifischen files
 
