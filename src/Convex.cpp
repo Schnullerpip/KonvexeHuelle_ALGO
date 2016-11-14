@@ -34,7 +34,7 @@ processes the command line arguments
 void processArguments(int argc, char** argv, std::vector<Point*>* points) {
 	for (int i = 0; i < argc; ++i) {
 		std::string s(argv[i]);
-		if (s == "--DataRandom") {
+		if (s == "--DataRandom") {//Command line argument for generating Random Vertices
 			if (!(argc - i >= 3)) {
 				std::cout << "[Convex]::processArguments -> --DataRandom argument needs additional 3 arguments for amount, upper bound & lower bound" << std::endl;
 				continue;
@@ -44,10 +44,10 @@ void processArguments(int argc, char** argv, std::vector<Point*>* points) {
 			int lower_bound = atoi(argv[++i]);
 			getPointsFromRandom(points, amount, upper_bound, lower_bound);
 		}
-		else if (s == "--DataFile" && argc - i >= 1) {
+		else if (s == "--DataFile" && argc - i >= 1) { //Command line argument for reading vertices out of file
 			getPointsFromFile(argv[++i], points);
 		}
-		else if (s == "--performance") {
+		else if (s == "--performance") { //Command line argument to trigger performance loop mode - default is graphic
 			loop = performanceOptimizedLoop;
 		}
 	}
