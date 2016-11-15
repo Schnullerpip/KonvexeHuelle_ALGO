@@ -1,5 +1,6 @@
 #pragma once
 #include "DivideAndConquer.h"
+#include "I_View.hpp"
 #include <iostream>
 
 void swap(Point* a, Point* b);
@@ -17,8 +18,9 @@ DaC_recursive processes the recursive steps in the Divide and Conquer Algorithm
 void DaC_step(std::vector<Point*>* points, ConvexHull* ch) {
 	//|points| <= 3 brute-force CH(points) - should be O(1)
 	if (points->size() <= 3) {
-		
+		//TODO the actual algorithm
 	}
+	//TODO the actual algorithm
 }
 
 /**
