@@ -70,9 +70,9 @@ void performanceOptimizedLoop(std::vector<Point*>* points) {
 An application loop, that will provide a GUI for the user and also displays the points and the convex frame (step by step)*/
 void graphicalLoop(std::vector<Point*>* points) {
 	I_View* view = new ConvexGUI(points);
+	DaC_preparation(points);
 	while (!view->shouldClose()) {
-		DaC(points);
-		view->update();
+		DaC_step(points, 0, points->size(), view);
 	}
 	delete view;
 }

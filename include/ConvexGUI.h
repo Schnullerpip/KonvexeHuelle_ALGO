@@ -15,7 +15,7 @@ public:
 	ConvexGUI(std::vector<Point*>* points);
 	~ConvexGUI();
 
-	void update(void* credentials)override;
+	void update(std::vector<ConvexHull*>* ch)override;
 	bool shouldClose()override;
 };
 

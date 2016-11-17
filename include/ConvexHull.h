@@ -11,5 +11,7 @@ public:
 	~ConvexHull();
 
 	void addPoint(Point*);
+	int size() const;
+	Point* at(int index) const;
 };
 
