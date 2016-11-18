@@ -30,7 +30,7 @@ ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* vi
 		return ch;
 	}
 	else { //partition point set into two equal sets and get their convex hulls
-		int middle = (end - begin) / 2;
+		int middle = begin + (end - begin) / 2;
 		ConvexHull* lch = DaC_step(points, begin, middle, view);
 		ConvexHull* rch = DaC_step(points, middle, end, view);
 
@@ -41,7 +41,7 @@ ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* vi
 			huulls.push_back(lch);
 			huulls.push_back(rch);
 			view->update(&huulls);
-			//std::cin.get();
+			std::cin.get();
 		}
 
 
@@ -51,7 +51,7 @@ ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* vi
 			std::vector<ConvexHull*> hulls;
 			hulls.push_back(merged);
 			view->update(&hulls);
-			//std::cin.get();
+			std::cin.get();
 		}
 
 		return merged;
@@ -166,20 +166,16 @@ ConvexHull* mergeHulls(ConvexHull* first, ConvexHull* second) {
 	- from top_most_second until right_most_second
 	- right_most_second until ignore
 	- from ignore(last)_first until left_most_first*/
-	int stop1;
-	stop1 = safeIncrement(first->size(), top_most_first);
 
-	for (int i = left_most_first; i != safeIncrement(first->size(), top_most_first); i = safeIncrement(first->size(), i)) {
+	for (int i = bottom_most_first; i != top_most_first; i = safeIncrement(first->size(), i)) {
 		newHull->addPoint(first->at(i));
 	}
+	newHull->addPoint(first->at(top_most_first));
 
-	for (int i = top_most_second; i != safeIncrement(second->size(), bottom_most_second); i = safeIncrement(second->size(), i)) {
+	for (int i = top_most_second; i != bottom_most_second; i = safeIncrement(second->size(), i)) {
 		newHull->addPoint(second->at(i));
 	}
-
-	for (int i = bottom_most_first; i != safeIncrement(first->size(), left_most_first); i = safeIncrement(first->size(), i)) {
-		newHull->addPoint(first->at(i));
-	}
+	newHull->addPoint(second->at(bottom_most_second));
 
 	//return the new convex hull
 	return newHull;
