@@ -73,6 +73,7 @@ void graphicalLoop(std::vector<Point*>* points) {
 	DaC_preparation(points);
 	while (!view->shouldClose()) {
 		DaC_step(points, 0, points->size(), view);
+		//view->update();
 	}
 	delete view;
 }

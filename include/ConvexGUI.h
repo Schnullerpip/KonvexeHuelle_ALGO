@@ -5,10 +5,13 @@
 class ConvexGUI : public I_View
 {
 private:
+	const int SCREEN_WIDTH = 1000;
+	const int SCREEN_HEIGHT = 600;
 	//member
 	sf::RenderWindow window;
 	bool should_close;
 	sf::CircleShape pointRepresentation;
+	sf::Font font;
 	//methods
 	void handleEvents();
 public:
