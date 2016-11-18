@@ -22,10 +22,29 @@ DaC_recursive processes the recursive steps in the Divide and Conquer Algorithm
 */
 ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* view) {
 	//|points| <= 3 brute-force CH(points) - should be O(1)
-	if (end - begin <= 3) {
+	if (end - begin < 3) {
 		ConvexHull* ch = new ConvexHull();
 		for (int i = begin; i < end; ++i) {
 			ch->addPoint((*points)[i]);
+		}
+		return ch;
+	}
+	else if (end - begin == 3) {
+		ConvexHull* ch = new ConvexHull();
+		/*
+		make sure to add them clock wise, that simplifies merging a lot
+		If we have 3 points we know that idx 0 is left most and idx 2 is right most, because they are sorted by x-coords, 
+		for clock wise purpose we want to add the next point according to its y coord -> the higher one comes next
+		*/
+		bool higher = (*points)[begin + 1]->getY() > (*points)[begin+2]->getY();
+		ch->addPoint((*points)[begin]);
+		if (higher) {
+			ch->addPoint((*points)[begin+1]);
+			ch->addPoint((*points)[begin+2]);
+		}
+		else {
+			ch->addPoint((*points)[begin+2]);
+			ch->addPoint((*points)[begin+1]);
 		}
 		return ch;
 	}
@@ -102,6 +121,25 @@ int fill_ignore_list(ConvexHull* ch, int start_index, int end_index, int compari
 	return index_of_first_ignored;
 }
 
+/**
+generic get (...)-most function
+*/
+int most(ConvexHull* ch, float(*genericGetter)(Point* p), bool(*constraint)(int, int)){
+	int wanted = 0;
+	for (int i = 1; i < ch->size(); ++i) {
+		if (constraint(genericGetter(ch->at(i)), genericGetter(ch->at(wanted)))) {
+			wanted = i;
+		}
+	}
+	return wanted;
+}
+
+/*functions used as arguments for generic use of most function*/
+bool higher(int a, int b) { return a > b; }
+bool lower(int a, int b) { return a < b; }
+float getx(Point* p) { return p->getX(); }
+float gety(Point* p) { return p->getY(); }
+
 
 /**
 merges two convex hulls, eliminating vertices inside the new convex hull
@@ -109,26 +147,6 @@ merges two convex hulls, eliminating vertices inside the new convex hull
 @param right the pointer to the second convex hull
 */
 ConvexHull* mergeHulls(ConvexHull* first, ConvexHull* second) {
-
-
-	//generic get (...)-most function TODO try to make all auto functions static
-	auto most = [](ConvexHull* ch, float (*genericGetter)(Point* p), bool (*constraint)(int, int)) {
-		int wanted = 0;
-		for (int i = 1; i < ch->size(); ++i) {
-			if (constraint(genericGetter(ch->at(i)), genericGetter(ch->at(wanted)))) {
-				wanted = i;
-			}
-		}
-		return wanted;
-	};
-	//comparision functions
-	auto higher = [](int a, int b) { return (a > b); };
-	auto lower = [](int a, int b) { return (a < b); };
-	//generic getter functions
-	auto gety = [](Point* p) { return p->getY(); };
-	auto getx = [](Point* p) { return p->getX(); };
-
-
 
 	//get top most points (indices) of both left and right convex hull
 	int top_most_first	= most(first, gety, higher);
@@ -145,19 +163,6 @@ ConvexHull* mergeHulls(ConvexHull* first, ConvexHull* second) {
 	auto comp_greater = [](int a, int b) {return a > b; };
 	auto comp_smaller = [](int a, int b) {return a < b; };
 
-	std::set<int> first_should_ignore;
-	int first_ignored_last  = fill_ignore_list(first, right_most_first, left_most_first, bottom_most_first, &first_should_ignore, safeIncrement, comp_greater);
-	int first_ignored_first = fill_ignore_list(first, right_most_first, left_most_first, top_most_first, &first_should_ignore, safeDecrement, comp_greater);
-
-	int left_most_second = most(second, getx, lower);
-	int right_most_second = most(second, getx, higher);
-
-	std::set<int> second_should_ignore;
-	int second_ignored_last  = fill_ignore_list(second, left_most_second, right_most_second, bottom_most_second, &second_should_ignore, safeDecrement, comp_smaller);
-	int second_ignored_first = fill_ignore_list(second, left_most_second, right_most_second, top_most_second, &second_should_ignore, safeIncrement, comp_smaller);
-
-	//create a new convex hull using the ignore lists and the first and second convex hulls
-
 	//the new convex hull to return
 	ConvexHull* newHull = new ConvexHull();
 
@@ -167,7 +172,7 @@ ConvexHull* mergeHulls(ConvexHull* first, ConvexHull* second) {
 	- right_most_second until ignore
 	- from ignore(last)_first until left_most_first*/
 
-	for (int i = bottom_most_first; i != top_most_first; i = safeIncrement(first->size(), i)) {
+	for (int i = left_most_first; i != top_most_first; i = safeIncrement(first->size(), i)) {
 		newHull->addPoint(first->at(i));
 	}
 	newHull->addPoint(first->at(top_most_first));
@@ -176,6 +181,12 @@ ConvexHull* mergeHulls(ConvexHull* first, ConvexHull* second) {
 		newHull->addPoint(second->at(i));
 	}
 	newHull->addPoint(second->at(bottom_most_second));
+
+	for (int i = bottom_most_first; i != left_most_first; i = safeIncrement(first->size(), i)) {
+		newHull->addPoint(first->at(i));
+	}
+
+	newHull->adjustClockWise();
 
 	//return the new convex hull
 	return newHull;
