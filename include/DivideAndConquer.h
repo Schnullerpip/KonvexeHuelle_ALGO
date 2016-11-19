@@ -16,4 +16,4 @@ Divide And Conquer Algorithm recursive step
 *@param points - the vector with all the vertices we want to iterate over
 @param ch - te convex hull object, that will be filled/updated
 */
-ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* view);
+ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* view = nullptr);

@@ -22,10 +22,29 @@ DaC_recursive processes the recursive steps in the Divide and Conquer Algorithm
 */
 ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* view) {
 	//|points| <= 3 brute-force CH(points) - should be O(1)
-	if (end - begin <= 3) {
+	if (end - begin < 3) {
 		ConvexHull* ch = new ConvexHull();
 		for (int i = begin; i < end; ++i) {
 			ch->addPoint((*points)[i]);
+		}
+		return ch;
+	}
+	else if (end - begin == 3) {
+		ConvexHull* ch = new ConvexHull();
+		/*
+		make sure to add them clock wise, that simplifies merging a lot
+		If we have 3 points we know that idx 0 is left most and idx 2 is right most, because they are sorted by x-coords, 
+		for clock wise purpose we want to add the next point according to its y coord -> the higher one comes next
+		*/
+		bool higher = (*points)[begin + 1]->getY() > (*points)[begin+2]->getY();
+		ch->addPoint((*points)[begin]);
+		if (higher) {
+			ch->addPoint((*points)[begin+1]);
+			ch->addPoint((*points)[begin+2]);
+		}
+		else {
+			ch->addPoint((*points)[begin+2]);
+			ch->addPoint((*points)[begin+1]);
 		}
 		return ch;
 	}
@@ -37,16 +56,19 @@ ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* vi
 
 		if (view)
 		{
-			std::vector<ConvexHull*> huulls;
-			huulls.push_back(lch);
-			huulls.push_back(rch);
-			view->update(&huulls);
+			std::vector<ConvexHull*> to_be_merged;
+			to_be_merged.push_back(lch);
+			to_be_merged.push_back(rch);
+			view->update(&to_be_merged);
 			std::cin.get();
 		}
 
-
 		//merge the two convex hulls
 		ConvexHull* merged = mergeHulls(lch, rch);
+
+		delete lch;
+		delete rch;
+
 		if (view) {
 			std::vector<ConvexHull*> hulls;
 			hulls.push_back(merged);
@@ -102,6 +124,43 @@ int fill_ignore_list(ConvexHull* ch, int start_index, int end_index, int compari
 	return index_of_first_ignored;
 }
 
+/**
+generic get (...)-most function
+*/
+int most(ConvexHull* ch, float(*genericGetter)(Point* p), bool(*constraint)(int, int)){
+	int wanted = 0;
+	for (int i = 1; i < ch->size(); ++i) {
+		if (constraint(genericGetter(ch->at(i)), genericGetter(ch->at(wanted)))) {
+			wanted = i;
+		}
+	}
+	return wanted;
+}
+
+/*functions used as arguments for generic use of most function*/
+bool higher(int a, int b) { return a >= b; }
+bool lower(int a, int b) { return a <= b; }
+float getx(Point* p) { return p->getX(); }
+float gety(Point* p) { return p->getY(); }
+float getxy(Point* p) { return p->getX() + p->getY(); }
+
+
+float triangleVolume(Point* A, Point* B, Point* C) {
+	float volume = 0;
+	volume = A->getX()*(B->getY() - C->getY()) + B->getX()*(C->getY() - A->getY()) + C->getX() * (A->getY() - B->getY());
+	volume /= 2;
+	if (volume < 0)volume *= -1;
+
+	return volume;
+}
+
+bool quadrilateralIntersection(Point* p, Point* A, Point* B, Point* C, Point* D, float volume) {
+	return (triangleVolume(p, A, B) +
+		triangleVolume(p, B, C) +
+		triangleVolume(p, C, D) +
+		triangleVolume(p, D, A)) == volume;
+
+}
 
 /**
 merges two convex hulls, eliminating vertices inside the new convex hull
@@ -110,74 +169,89 @@ merges two convex hulls, eliminating vertices inside the new convex hull
 */
 ConvexHull* mergeHulls(ConvexHull* first, ConvexHull* second) {
 
-
-	//generic get (...)-most function TODO try to make all auto functions static
-	auto most = [](ConvexHull* ch, float (*genericGetter)(Point* p), bool (*constraint)(int, int)) {
-		int wanted = 0;
-		for (int i = 1; i < ch->size(); ++i) {
-			if (constraint(genericGetter(ch->at(i)), genericGetter(ch->at(wanted)))) {
-				wanted = i;
-			}
-		}
-		return wanted;
-	};
-	//comparision functions
-	auto higher = [](int a, int b) { return (a > b); };
-	auto lower = [](int a, int b) { return (a < b); };
-	//generic getter functions
-	auto gety = [](Point* p) { return p->getY(); };
-	auto getx = [](Point* p) { return p->getX(); };
-
-
-
-	//get top most points (indices) of both left and right convex hull
-	int top_most_first	= most(first, gety, higher);
-	int top_most_second	= most(second, gety, higher);
-
-	//get bottom most points (indices) of both left and right convex hull
-	int bottom_most_first	= most(first, gety, lower);
-	int bottom_most_second	= most(second, gety, lower);
-
-	//discard all points in between upper and lower tangent
-	int right_most_first = most(first, getx, higher);
-	int left_most_first = most(first, getx, lower);
-
-	auto comp_greater = [](int a, int b) {return a > b; };
-	auto comp_smaller = [](int a, int b) {return a < b; };
-
-	std::set<int> first_should_ignore;
-	int first_ignored_last  = fill_ignore_list(first, right_most_first, left_most_first, bottom_most_first, &first_should_ignore, safeIncrement, comp_greater);
-	int first_ignored_first = fill_ignore_list(first, right_most_first, left_most_first, top_most_first, &first_should_ignore, safeDecrement, comp_greater);
-
 	int left_most_second = most(second, getx, lower);
-	int right_most_second = most(second, getx, higher);
+	int right_most_first  = most(first, getx, higher);
+	
+	int upper_merge_point_first = right_most_first;
+	int upper_merge_point_second = left_most_second;
 
-	std::set<int> second_should_ignore;
-	int second_ignored_last  = fill_ignore_list(second, left_most_second, right_most_second, bottom_most_second, &second_should_ignore, safeDecrement, comp_smaller);
-	int second_ignored_first = fill_ignore_list(second, left_most_second, right_most_second, top_most_second, &second_should_ignore, safeIncrement, comp_smaller);
+	int bottom_merge_point_first = right_most_first;
+	int bottom_merge_point_second = left_most_second;
 
-	//create a new convex hull using the ignore lists and the first and second convex hulls
+	/**
+	returns >0 if p is left of the line left-right, =0 if p is on line left-right, <0 if p is right of the line left-right
+	*/
+	auto onTangent = [](Point* A, Point* B, Point* p) {
+		return (B->getX() - A->getX())*(p->getY() - A->getY()) - (p->getX() - A->getX())*(B->getY() - A->getY());
+	};
 
-	//the new convex hull to return
+	auto isLeft = [onTangent](Point* A, Point* B, Point* p) {
+		float value = onTangent(A, B, p);
+		return value >= 0;
+	};
+	auto isRight = [onTangent](Point* A, Point* B, Point* p) {
+		float value = onTangent(A, B, p);
+		return value <= 0;
+	};
+
+
+	//find the upper merge point
+	bool first_merge_point_ready = false;
+	bool second_merge_point_ready = false;
+	do {
+		Point* left  = first->at(safeDecrement(first->size(), upper_merge_point_first));
+		Point* ump_f = first->at(upper_merge_point_first);
+		Point* ump_s = second->at(upper_merge_point_second);
+		Point* right = second->at(safeIncrement(second->size(), upper_merge_point_second));
+
+		//left-ump_f must be a right-turn
+		first_merge_point_ready = isLeft(ump_s, ump_f, left);
+		//ump_s-right must be a left-turn
+		second_merge_point_ready = isRight(ump_f, ump_s, right);
+
+		if (!first_merge_point_ready)
+			upper_merge_point_first = safeDecrement(first->size(), upper_merge_point_first);
+		if (!second_merge_point_ready)
+			upper_merge_point_second = safeIncrement(second->size(), upper_merge_point_second);
+
+	} while (!(first_merge_point_ready && second_merge_point_ready));
+
+	//find the bottom merge point
+	first_merge_point_ready = false;
+	second_merge_point_ready = false;
+	do {
+		Point* left  = first->at(safeIncrement(first->size(), bottom_merge_point_first));
+		Point* ump_f = first->at(bottom_merge_point_first);
+		Point* ump_s = second->at(bottom_merge_point_second);
+		Point* right = second->at(safeDecrement(second->size(), bottom_merge_point_second));
+
+		//left-ump_f must be a right-turn
+		first_merge_point_ready = isRight(ump_s, ump_f, left);
+		//ump_s-right must be a left-turn
+		second_merge_point_ready = isLeft(ump_f, ump_s, right);
+
+		if (!first_merge_point_ready)
+			bottom_merge_point_first = safeIncrement(first->size(), bottom_merge_point_first);
+		if (!second_merge_point_ready)
+			bottom_merge_point_second = safeDecrement(second->size(), bottom_merge_point_second);
+
+	} while (!(first_merge_point_ready && second_merge_point_ready));
+
+	//now we have the correct merge points and can create the new convex Hull
 	ConvexHull* newHull = new ConvexHull();
 
-	/*filling order should be:
-	- left_most_first until top_most_first
-	- from top_most_second until right_most_second
-	- right_most_second until ignore
-	- from ignore(last)_first until left_most_first*/
-
-	for (int i = bottom_most_first; i != top_most_first; i = safeIncrement(first->size(), i)) {
+	//iterate from merge point to merge point and fill the new convex hull (in the right order!!!)
+	for (int i = bottom_merge_point_first; i != upper_merge_point_first; i = safeIncrement(first->size(), i)) {
 		newHull->addPoint(first->at(i));
 	}
-	newHull->addPoint(first->at(top_most_first));
+	newHull->addPoint(first->at(upper_merge_point_first));
 
-	for (int i = top_most_second; i != bottom_most_second; i = safeIncrement(second->size(), i)) {
+	for (int i = upper_merge_point_second; i != bottom_merge_point_second; i = safeIncrement(second->size(), i)) {
 		newHull->addPoint(second->at(i));
 	}
-	newHull->addPoint(second->at(bottom_most_second));
+	newHull->addPoint(second->at(bottom_merge_point_second));
 
-	//return the new convex hull
+
 	return newHull;
 }
 
