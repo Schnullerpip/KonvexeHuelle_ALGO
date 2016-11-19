@@ -62,8 +62,12 @@ void processArguments(int argc, char** argv, std::vector<Point*>* points) {
 An application loop, that will jut process the convex algorithm, without graphically displaying it and also measuring the process*/
 void performanceOptimizedLoop(std::vector<Point*>* points) {
 
+	DaC_preparation(points);
+	ConvexHull* ch = DaC_step(points, 0, points->size());
+
 	//when everything is finished and results are displayed wait for the user to close the application
 	std::cin.get();
+	delete ch;
 }
 
 /**
@@ -72,8 +76,8 @@ void graphicalLoop(std::vector<Point*>* points) {
 	I_View* view = new ConvexGUI(points);
 	DaC_preparation(points);
 	while (!view->shouldClose()) {
-		DaC_step(points, 0, points->size(), view);
-		//view->update();
+		ConvexHull* ch = DaC_step(points, 0, points->size(), view);
+		delete ch;
 	}
 	delete view;
 }

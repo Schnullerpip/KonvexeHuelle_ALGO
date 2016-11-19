@@ -6,23 +6,6 @@ ConvexHull::ConvexHull()
 
 void ConvexHull::addPoint(Point* point) {
 	points.push_back(point);
-	if (point->getX() < left_most) {
-		left_most = point->getX();
-		left = points.back();
-	}
-	if (point->getX() > right_most) {
-		right_most = point->getX();
-		right = points.back();
-	}
-
-	if (point->getY() > top_most) {
-		top_most = point->getY();
-		top = points.back();
-	}
-	if (point->getY() < bottom_most) {
-		bottom_most = point->getY();
-		bottom = points.back();
-	}
 }
 
 void ConvexHull::adjustClockWise() {
