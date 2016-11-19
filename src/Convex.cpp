@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 
 //Function prototypes
@@ -61,9 +62,16 @@ void processArguments(int argc, char** argv, std::vector<Point*>* points) {
 /**
 An application loop, that will jut process the convex algorithm, without graphically displaying it and also measuring the process*/
 void performanceOptimizedLoop(std::vector<Point*>* points) {
+	typedef std::chrono::high_resolution_clock Time;
+	typedef std::chrono::milliseconds ms;
 
+
+	auto t1 = Time::now();
 	DaC_preparation(points);
 	ConvexHull* ch = DaC_step(points, 0, points->size());
+	auto t2 = Time::now();
+	std::cout << std::endl << "[Convex]::performanceOptimizedLoop  took: " <<
+		std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count() << " seconds" << std::endl;
 
 	//when everything is finished and results are displayed wait for the user to close the application
 	std::cin.get();
