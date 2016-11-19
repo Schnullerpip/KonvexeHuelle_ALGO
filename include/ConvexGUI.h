@@ -19,6 +19,7 @@ public:
 	~ConvexGUI();
 
 	void update(std::vector<ConvexHull*>* ch)override;
+	int getInput() override;
 	bool shouldClose()override;
 };
 

@@ -60,7 +60,7 @@ ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* vi
 			to_be_merged.push_back(lch);
 			to_be_merged.push_back(rch);
 			view->update(&to_be_merged);
-			std::cin.get();
+			view->getInput();
 		}
 
 		//merge the two convex hulls
@@ -73,7 +73,7 @@ ConvexHull* DaC_step(std::vector<Point*>* points, int begin, int end, I_View* vi
 			std::vector<ConvexHull*> hulls;
 			hulls.push_back(merged);
 			view->update(&hulls);
-			std::cin.get();
+			view->getInput();
 		}
 
 		return merged;

@@ -110,6 +110,25 @@ void ConvexGUI::handleEvents() {
 	}
 }
 
+int ConvexGUI::getInput() {
+	//synchronous wait for user input
+	bool wait = true;
+	sf::Event event;
+	while (wait) {
+		while (window.pollEvent(event)) {
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return)){
+				wait = false;
+			}
+			if (event.type == sf::Event::Closed) {
+				should_close = true;
+				window.close();
+				wait = false;
+			}
+		}
+	}
+	return event.key.code;
+}
+
 
 bool ConvexGUI::shouldClose()
 {

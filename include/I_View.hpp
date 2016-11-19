@@ -8,5 +8,6 @@ protected:
 	std::vector<Point*>* points;
 public:
 	virtual void update(std::vector<ConvexHull*>* ch  = nullptr) = 0;
+	virtual int getInput() = 0;
 	virtual bool shouldClose() = 0;
 };
