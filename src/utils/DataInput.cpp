@@ -3,6 +3,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <cmath>
 
 /**
 extrudes points stored in a file and writes them into a vector -> dont forget to properly delete the vector!
@@ -42,4 +43,28 @@ void getPointsFromRandom(std::vector<Point*>* out_points, int amount, int upper_
 	for (int i = 0; i < amount; ++i) {
 		out_points->push_back(new Point(dist(mt), dist(mt)));
 	}
+	std::random_shuffle(points.begin(), points.end());
+}
+
+void getPointsForCircle(int points, double radius, Point center, std::vector<Point*>* out_points)
+{
+    double pi = 4 * atan(1);
+    double slice = 2 * pi / points;
+    for (int i = 0; i < points; i++)
+    {
+        double angle = slice * i;
+        int newX = (int)(center.getX() + radius * cos(angle));
+        int newY = (int)(center.getY() + radius * sin(angle));
+		out_points->push_back(new Point(newX, newY));
+    }
+}
+
+void getPointsForSquare(std::vector<Point*>* out_points, int amount, int upper_bound, int lower_bound)
+{
+    getPointsFromRandom(out_points, amount, upper_bound, lower_bound);
+
+    out_points->push_back(new Point(50, 50));
+    out_points->push_back(new Point(500, 50));
+    out_points->push_back(new Point(50, 500));
+    out_points->push_back(new Point(500, 500));
 }
